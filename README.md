@@ -1,110 +1,183 @@
 # Scriptalex
 Scriptalex
--- Criação do painel de interface
+-- Criando o painel e as funcionalidades
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Configuração inicial do painel
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local ColorPickerButton = Instance.new("TextButton")
+local ESPButton = Instance.new("TextButton")
+local HitboxButton = Instance.new("TextButton")
+local DistanceESPButton = Instance.new("TextButton")
+local NameESPButton = Instance.new("TextButton")
 local ToggleESPButton = Instance.new("TextButton")
-local ESP_Ativado = false
-local ESP = {}
-local HighlightColor = Color3.fromRGB(255, 0, 0) -- Cor inicial do destaque (Vermelho)
+local ToggleHitboxButton = Instance.new("TextButton")
+local ToggleDistanceESPButton = Instance.new("TextButton")
+local ToggleNameESPButton = Instance.new("TextButton")
 
--- Painel
-ScreenGui.Parent = game.Players.LocalPlayer.PlayerGui
-ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game.CoreGui
 
+-- Configuração do Frame
 MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 250, 0, 150)
-MainFrame.Position = UDim2.new(0.5, -125, 0.5, -75)
+MainFrame.Size = UDim2.new(0, 300, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-MainFrame.BackgroundTransparency = 0.3
+MainFrame.BackgroundTransparency = 0.5
 
-Title.Parent = MainFrame
-Title.Size = UDim2.new(1, 0, 0.2, 0)
-Title.Text = "Painel ESP"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 20
-
--- Botão para ativar/desativar ESP
-ToggleESPButton.Parent = MainFrame
-ToggleESPButton.Size = UDim2.new(0.8, 0, 0.2, 0)
-ToggleESPButton.Position = UDim2.new(0.1, 0, 0.3, 0)
-ToggleESPButton.Text = "Ativar ESP"
-ToggleESPButton.TextColor3 = Color3.fromRGB(0, 255, 0)
-ToggleESPButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ToggleESPButton.Font = Enum.Font.SourceSansBold
-ToggleESPButton.TextSize = 18
-
--- Botão para escolher a cor
-ColorPickerButton.Parent = MainFrame
-ColorPickerButton.Size = UDim2.new(0.8, 0, 0.2, 0)
-ColorPickerButton.Position = UDim2.new(0.1, 0, 0.6, 0)
-ColorPickerButton.Text = "Mudar Cor"
-ColorPickerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ColorPickerButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
-ColorPickerButton.Font = Enum.Font.SourceSansBold
-ColorPickerButton.TextSize = 18
-
--- Função para destacar o jogador
-function ESP:HighlightPlayer(player)
-    if not ESP_Ativado then return end
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local highlight = Instance.new("Highlight")
-        highlight.Adornee = player.Character
-        highlight.FillColor = HighlightColor
-        highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- Branco
-        highlight.Parent = game.CoreGui
-    end
+-- Função de Criar Botões no Painel
+local function createButton(name, position, text, func)
+    local button = Instance.new("TextButton")
+    button.Name = name
+    button.Size = UDim2.new(0, 260, 0, 50)
+    button.Position = position
+    button.Text = text
+    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Font = Enum.Font.SourceSansBold
+    button.TextSize = 18
+    button.Parent = MainFrame
+    button.MouseButton1Click:Connect(func)
+    return button
 end
 
--- Função para ativar/desativar ESP
-ToggleESPButton.MouseButton1Click:Connect(function()
+-- Variáveis para ESP, Hitbox e outras funções
+local ESP_Ativado = false
+local Hitbox_Ativado = false
+local DistanceESP_Ativado = false
+local NameESP_Ativado = false
+
+-- Função para ativar/desativar o ESP
+local function toggleESP()
     ESP_Ativado = not ESP_Ativado
     if ESP_Ativado then
         ToggleESPButton.Text = "Desativar ESP"
-        ToggleESPButton.TextColor3 = Color3.fromRGB(255, 0, 0)
-        for _, player in pairs(game.Players:GetPlayers()) do
-            ESP:HighlightPlayer(player)
-        end
+        -- Lógica de ativação do ESP (mostrando caixas ou outras marcas)
     else
         ToggleESPButton.Text = "Ativar ESP"
-        ToggleESPButton.TextColor3 = Color3.fromRGB(0, 255, 0)
-        -- Remove o highlight de todos os jogadores
-        for _, v in pairs(game.CoreGui:GetChildren()) do
-            if v:IsA("Highlight") then
-                v:Destroy()
+        -- Lógica de desativação do ESP
+    end
+end
+
+-- Função para ativar/desativar a Hitbox
+local function toggleHitbox()
+    Hitbox_Ativado = not Hitbox_Ativado
+    if Hitbox_Ativado then
+        ToggleHitboxButton.Text = "Desativar Hitbox"
+        -- Lógica para adicionar a hitbox
+    else
+        ToggleHitboxButton.Text = "Ativar Hitbox"
+        -- Lógica para remover a hitbox
+    end
+end
+
+-- Função para ativar/desativar o Distance ESP
+local function toggleDistanceESP()
+    DistanceESP_Ativado = not DistanceESP_Ativado
+    if DistanceESP_Ativado then
+        ToggleDistanceESPButton.Text = "Desativar Distance ESP"
+        -- Lógica para ativar a visualização de distância
+    else
+        ToggleDistanceESPButton.Text = "Ativar Distance ESP"
+        -- Lógica para desativar a visualização de distância
+    end
+end
+
+-- Função para ativar/desativar o Name ESP
+local function toggleNameESP()
+    NameESP_Ativado = not NameESP_Ativado
+    if NameESP_Ativado then
+        ToggleNameESPButton.Text = "Desativar Name ESP"
+        -- Lógica para mostrar os nomes dos jogadores
+    else
+        ToggleNameESPButton.Text = "Ativar Name ESP"
+        -- Lógica para desativar os nomes
+    end
+end
+
+-- Criar botões
+createButton("ESPButton", UDim2.new(0, 20, 0, 20), "Ativar ESP", toggleESP)
+createButton("HitboxButton", UDim2.new(0, 20, 0, 80), "Ativar Hitbox", toggleHitbox)
+createButton("DistanceESPButton", UDim2.new(0, 20, 0, 140), "Ativar Distance ESP", toggleDistanceESP)
+createButton("NameESPButton", UDim2.new(0, 20, 0, 200), "Ativar Name ESP", toggleNameESP)
+
+-- Função para a lógica de ESP (simples)
+local function createESP(player)
+    if ESP_Ativado then
+        local box = Instance.new("BillboardGui")
+        box.Adornee = player.Character.HumanoidRootPart
+        box.Size = UDim2.new(0, 100, 0, 100)
+        box.StudsOffset = Vector3.new(0, 2, 0)
+        box.AlwaysOnTop = true
+        box.Parent = game.CoreGui
+
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(1, 0, 1, 0)
+        frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        frame.BackgroundTransparency = 0.5
+        frame.Parent = box
+    end
+end
+
+-- Função para a lógica de Name ESP
+local function createNameESP(player)
+    if NameESP_Ativado and player.Character and player.Character:FindFirstChild("Head") then
+        local nameTag = Instance.new("BillboardGui")
+        nameTag.Adornee = player.Character.Head
+        nameTag.Size = UDim2.new(0, 100, 0, 50)
+        nameTag.StudsOffset = Vector3.new(0, 2, 0)
+        nameTag.AlwaysOnTop = true
+        nameTag.Parent = game.CoreGui
+
+        local nameLabel = Instance.new("TextLabel")
+        nameLabel.Size = UDim2.new(1, 0, 1, 0)
+        nameLabel.Text = player.Name
+        nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        nameLabel.BackgroundTransparency = 1
+        nameLabel.Font = Enum.Font.SourceSans
+        nameLabel.TextSize = 18
+        nameLabel.Parent = nameTag
+    end
+end
+
+-- Função para a lógica de Distance ESP
+local function createDistanceESP(player)
+    if DistanceESP_Ativado then
+        local distanceText = Instance.new("BillboardGui")
+        distanceText.Adornee = player.Character.HumanoidRootPart
+        distanceText.Size = UDim2.new(0, 100, 0, 50)
+        distanceText.StudsOffset = Vector3.new(0, 3, 0)
+        distanceText.AlwaysOnTop = true
+        distanceText.Parent = game.CoreGui
+
+        local distanceLabel = Instance.new("TextLabel")
+        distanceLabel.Size = UDim2.new(1, 0, 1, 0)
+        distanceLabel.BackgroundTransparency = 1
+        distanceLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        distanceLabel.Font = Enum.Font.SourceSans
+        distanceLabel.TextSize = 18
+        distanceLabel.Parent = distanceText
+
+        -- Atualiza a distância
+        local function updateDistance()
+            while player.Character and player.Character:FindFirstChild("HumanoidRootPart") do
+                local distance = (player.Character.HumanoidRootPart.Position - character.HumanoidRootPart.Position).magnitude
+                distanceLabel.Text = math.floor(distance) .. " studs"
+                wait(0.5)
             end
         end
-    end
-end)
 
--- Função para mudar a cor do destaque
-ColorPickerButton.MouseButton1Click:Connect(function()
-    -- Exemplo de um prompt de cor (no caso, estamos usando um número de cores predefinido)
-    local colorOptions = {
-        Color3.fromRGB(255, 0, 0), -- Vermelho
-        Color3.fromRGB(0, 255, 0), -- Verde
-        Color3.fromRGB(0, 0, 255), -- Azul
-        Color3.fromRGB(255, 255, 0), -- Amarelo
-        Color3.fromRGB(255, 165, 0), -- Laranja
-    }
-    
-    -- Aleatoriamente escolhe uma cor da lista
-    HighlightColor = colorOptions[math.random(1, #colorOptions)]
-    
-    -- Exibe a cor escolhida no botão
-    ColorPickerButton.Text = "Cor Selecionada"
-    ColorPickerButton.BackgroundColor3 = HighlightColor
-end)
-
--- Função para limpar o highlight ao sair do jogo
-game.Players.PlayerRemoving:Connect(function(player)
-    for _, v in pairs(game.CoreGui:GetChildren()) do
-        if v:IsA("Highlight") and v.Adornee == player.Character then
-            v:Destroy()
-        end
+        updateDistance()
     end
+end
+
+-- Conectar os eventos de jogador
+game.Players.PlayerAdded:Connect(function(player)
+    -- Adicionar funcionalidades ao jogador
+    player.CharacterAdded:Connect(function()
+        createESP(player)
+        createNameESP(player)
+        createDistanceESP(player)
+    end)
 end)
